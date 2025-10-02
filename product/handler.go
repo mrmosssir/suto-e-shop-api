@@ -47,8 +47,9 @@ func (h *Handler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	page, pageSize := pagination.GetPaginationParams(r)
+	search := r.URL.Query().Get("search")
 
-	products, totalCount, err := h.service.GetProducts(r.Context(), page, pageSize)
+	products, totalCount, err := h.service.GetProducts(r.Context(), page, pageSize, search)
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return

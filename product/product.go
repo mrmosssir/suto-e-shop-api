@@ -10,6 +10,7 @@ import (
 type Product struct {
 	ID          string  `json:"id" firestore:"id"`
 	Name        string  `json:"name" firestore:"name"`
+	Category    string  `json:"category" firestore:"category"`
 	Price       int32   `json:"price" firestore:"price"`
 	OriginPrice int32   `json:"origin_price" firestore:"origin_price"`
 	Unit        string  `json:"unit" firestore:"unit"`
@@ -22,7 +23,7 @@ type Product struct {
 // Service provides product CRUD operations.
 type Service interface {
 	CreateProduct(ctx context.Context, product Product) (Product, error)
-	GetProducts(ctx context.Context, page, pageSize int) ([]Product, int, error)
+	GetProducts(ctx context.Context, page, pageSize int, search string) ([]Product, int, error)
 	GetProduct(ctx context.Context, id string) (Product, error)
 	UpdateProduct(ctx context.Context, id string, product Product) (Product, error)
 	DeleteProduct(ctx context.Context, id string) error
@@ -49,7 +50,7 @@ func (s *InMemoryService) CreateProduct(ctx context.Context, product Product) (P
 	return product, nil
 }
 
-func (s *InMemoryService) GetProducts(ctx context.Context, page, pageSize int) ([]Product, int, error) {
+func (s *InMemoryService) GetProducts(ctx context.Context, page, pageSize int, search string) ([]Product, int, error) {
 	var productList []Product
 	for _, p := range s.products {
 		productList = append(productList, p)

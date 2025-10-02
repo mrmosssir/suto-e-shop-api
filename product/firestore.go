@@ -33,9 +33,15 @@ func (s *FirestoreService) CreateProduct(ctx context.Context, product Product) (
 	return product, nil
 }
 
-func (s *FirestoreService) GetProducts(ctx context.Context, page, pageSize int) ([]Product, int, error) {
+func (s *FirestoreService) GetProducts(ctx context.Context, page, pageSize int, search string) ([]Product, int, error) {
 	var products []Product
-	iter := s.client.Collection(s.collection).Documents(ctx)
+	// For more advanced search capabilities, consider using a dedicated search service like Algolia or Elasticsearch.
+	query := s.client.Collection(s.collection).Query
+	if search != "" {
+		query = query.Where("name", ">=", search).Where("name", "<=", search+"\uf8ff")
+	}
+
+	iter := query.Documents(ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {

@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"suto-e-shop-api/auth"
 	"suto-e-shop-api/coupon"
+	"suto-e-shop-api/order"
 	"suto-e-shop-api/product"
 )
 
@@ -93,6 +94,11 @@ func main() {
 	couponService := coupon.NewFirestoreService(client)
 	couponHandler := coupon.NewHandler(couponService)
 	couponHandler.RegisterRoutes(adminRouter)
+
+	// Order routes
+	orderService := order.NewFirestoreService(client)
+	orderHandler := order.NewHandler(orderService)
+	orderHandler.RegisterRoutes(adminRouter)
 
 
 	port := os.Getenv("PORT")

@@ -10,6 +10,7 @@ import (
 	firebase "firebase.google.com/go/v4"
 	"github.com/gorilla/mux"
 	"suto-e-shop-api/auth"
+	"suto-e-shop-api/coupon"
 	"suto-e-shop-api/product"
 )
 
@@ -79,14 +80,19 @@ func main() {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	// Product routes
-	productService := product.NewFirestoreService(client)
-	productHandler := product.NewHandler(productService)
-
 	// Create a subrouter for the admin routes that require authentication
 	adminRouter := r.PathPrefix("/admin").Subrouter()
 	adminRouter.Use(auth.FirebaseJWTMiddleware(fbApp))
+
+	// Product routes
+	productService := product.NewFirestoreService(client)
+	productHandler := product.NewHandler(productService)
 	productHandler.RegisterRoutes(adminRouter)
+
+	// Coupon routes
+	couponService := coupon.NewFirestoreService(client)
+	couponHandler := coupon.NewHandler(couponService)
+	couponHandler.RegisterRoutes(adminRouter)
 
 
 	port := os.Getenv("PORT")

@@ -18,6 +18,7 @@ type Order struct {
 	Note       string    `json:"note" firestore:"note"`
 	TotalPrice int       `json:"total_price" firestore:"total_price"`
 	IsPaid     bool      `json:"is_paid" firestore:"is_paid"`
+	IsPicked   bool      `json:"is_picked" firestore:"is_picked"`
 	IsEnabled  bool      `json:"is_enabled" firestore:"is_enabled"`
 	PaidAt     string    `json:"paid_at" firestore:"paid_at"`
 	PickedAt   string    `json:"picked_at" firestore:"picked_at"`
@@ -27,4 +28,5 @@ type Order struct {
 // Service provides order operations.
 type Service interface {
 	GetOrders(ctx context.Context, page, pageSize int, search string) ([]Order, int, error)
+	UpdateOrder(ctx context.Context, id string, data map[string]interface{}) (Order, error)
 }

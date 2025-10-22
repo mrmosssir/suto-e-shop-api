@@ -88,7 +88,8 @@ func main() {
 	// Product routes
 	productService := product.NewFirestoreService(client)
 	productHandler := product.NewHandler(productService)
-	productHandler.RegisterRoutes(adminRouter)
+	productHandler.RegisterClientRoutes(r)
+	productHandler.RegisterAdminRoutes(adminRouter)
 
 	// Coupon routes
 	couponService := coupon.NewFirestoreService(client)

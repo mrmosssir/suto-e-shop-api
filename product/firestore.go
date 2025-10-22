@@ -22,7 +22,7 @@ func NewFirestoreService(client *firestore.Client) *FirestoreService {
 	}
 }
 
-func (s *FirestoreService) CreateProduct(ctx context.Context, product Product) (Product, error) {
+func (s *FirestoreService) AdminCreateProduct(ctx context.Context, product Product) (Product, error) {
 	ref := s.client.Collection(s.collection).NewDoc()
 	product.ID = ref.ID
 	_, err := ref.Set(ctx, product)
@@ -33,7 +33,7 @@ func (s *FirestoreService) CreateProduct(ctx context.Context, product Product) (
 	return product, nil
 }
 
-func (s *FirestoreService) GetProducts(ctx context.Context, page, pageSize int, search string) ([]Product, int, error) {
+func (s *FirestoreService) AdminGetProducts(ctx context.Context, page, pageSize int, search string) ([]Product, int, error) {
 	var products []Product
 	// For more advanced search capabilities, consider using a dedicated search service like Algolia or Elasticsearch.
 	query := s.client.Collection(s.collection).Query
@@ -71,7 +71,7 @@ func (s *FirestoreService) GetProducts(ctx context.Context, page, pageSize int, 
 	return products[start:end], totalCount, nil
 }
 
-func (s *FirestoreService) GetProduct(ctx context.Context, id string) (Product, error) {
+func (s *FirestoreService) AdminGetProduct(ctx context.Context, id string) (Product, error) {
 	doc, err := s.client.Collection(s.collection).Doc(id).Get(ctx)
 	if err != nil {
 		log.Printf("Failed to get product: %v", err)
@@ -82,7 +82,7 @@ func (s *FirestoreService) GetProduct(ctx context.Context, id string) (Product, 
 	return product, nil
 }
 
-func (s *FirestoreService) UpdateProduct(ctx context.Context, id string, product Product) (Product, error) {
+func (s *FirestoreService) AdminUpdateProduct(ctx context.Context, id string, product Product) (Product, error) {
 	_, err := s.client.Collection(s.collection).Doc(id).Set(ctx, product)
 	if err != nil {
 		log.Printf("Failed to update product: %v", err)
@@ -92,11 +92,60 @@ func (s *FirestoreService) UpdateProduct(ctx context.Context, id string, product
 	return product, nil
 }
 
-func (s *FirestoreService) DeleteProduct(ctx context.Context, id string) error {
+func (s *FirestoreService) AdminDeleteProduct(ctx context.Context, id string) error {
 	_, err := s.client.Collection(s.collection).Doc(id).Delete(ctx)
 	if err != nil {
 		log.Printf("Failed to delete product: %v", err)
 		return err
 	}
 	return nil
+}
+
+func (s *FirestoreService) GetProducts(ctx context.Context, page, pageSize int, search string) ([]ProductSimple, int, error) {
+	var products []ProductSimple
+	// For more advanced search capabilities, consider using a dedicated search service like Algolia or Elasticsearch.
+	query := s.client.Collection(s.collection).Query
+	if search != "" {
+		query = query.Where("name", ">=", search).Where("name", "<=", search+"\uf8ff")
+	}
+
+	iter := query.Documents(ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			log.Printf("Failed to get products: %v", err)
+			return nil, 0, err
+		}
+		var product ProductSimple
+		doc.DataTo(&product)
+		products = append(products, product)
+	}
+
+	totalCount := len(products)
+	start := (page - 1) * pageSize
+	end := start + pageSize
+
+	if start > totalCount {
+		return []ProductSimple{}, totalCount, nil
+	}
+
+	if end > totalCount {
+		end = totalCount
+	}
+
+	return products[start:end], totalCount, nil
+}
+
+func (s *FirestoreService) GetProduct(ctx context.Context, id string) (Product, error) {
+	doc, err := s.client.Collection(s.collection).Doc(id).Get(ctx)
+	if err != nil {
+		log.Printf("Failed to get product: %v", err)
+		return Product{}, err
+	}
+	var product Product
+	doc.DataTo(&product)
+	return product, nil
 }

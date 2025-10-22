@@ -3,7 +3,9 @@ package order
 import (
 	"context"
 	"log"
+	"strconv"
 	"strings"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
@@ -25,7 +27,7 @@ func NewFirestoreService(client *firestore.Client) *FirestoreService {
 
 func (s *FirestoreService) GetOrders(ctx context.Context, page, pageSize int, search string) ([]Order, int, error) {
 	var orders []Order
-	
+
 	query := s.client.Collection(s.collection).Query
 
 	iter := query.Documents(ctx)
@@ -42,7 +44,7 @@ func (s *FirestoreService) GetOrders(ctx context.Context, page, pageSize int, se
 		}
 		var order Order
 		doc.DataTo(&order)
-		
+
 		if search != "" {
 			if strings.Contains(order.Name, search) || strings.Contains(order.Mail, search) {
 				orders = append(orders, order)
@@ -65,4 +67,56 @@ func (s *FirestoreService) GetOrders(ctx context.Context, page, pageSize int, se
 	}
 
 	return orders[start:end], totalCount, nil
+}
+
+func (s *FirestoreService) UpdateOrder(ctx context.Context, id string, data map[string]interface{}) (Order, error) {
+	docRef := s.client.Collection(s.collection).Doc(id)
+
+	// Get the original document
+	doc, err := docRef.Get(ctx)
+	if err != nil {
+		log.Printf("Failed to get order for update: %v", err)
+		return Order{}, err
+	}
+	var originalOrder Order
+	doc.DataTo(&originalOrder)
+
+	// Prepare updates
+	var updates []firestore.Update
+	for key, value := range data {
+		updates = append(updates, firestore.Update{Path: key, Value: value})
+
+		// Check for is_paid update
+		if key == "is_paid" {
+			isPaid, ok := value.(bool)
+			if ok && isPaid && !originalOrder.IsPaid {
+				updates = append(updates, firestore.Update{Path: "paid_at", Value: strconv.FormatInt(time.Now().Unix(), 10)})
+			}
+		}
+
+		// Check for is_picked update
+		if key == "is_picked" {
+			isPicked, ok := value.(bool)
+			if ok && isPicked && !originalOrder.IsPicked {
+				updates = append(updates, firestore.Update{Path: "picked_at", Value: strconv.FormatInt(time.Now().Unix(), 10)})
+			}
+		}
+	}
+
+	_, err = docRef.Update(ctx, updates)
+	if err != nil {
+		log.Printf("Failed to update order: %v", err)
+		return Order{}, err
+	}
+
+	// Get the updated document
+	updatedDoc, err := docRef.Get(ctx)
+	if err != nil {
+		log.Printf("Failed to get updated order: %v", err)
+		return Order{}, err
+	}
+
+	var updatedOrder Order
+	updatedDoc.DataTo(&updatedOrder)
+	return updatedOrder, nil
 }

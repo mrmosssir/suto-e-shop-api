@@ -7,6 +7,7 @@ import (
 type Product struct {
 	Name  string `json:"name" firestore:"name"`
 	Count int    `json:"count" firestore:"count"`
+	Price int    `json:"price" firestore:"price"`
 }
 
 // Order defines the order data structure.
@@ -25,8 +26,15 @@ type Order struct {
 	CreatedAt  string    `json:"created_at" firestore:"created_at"`
 }
 
+type CreateOrderRequest struct {
+	Mail     string    `json:"mail"`
+	Name     string    `json:"name"`
+	Products []Product `json:"products"`
+}
+
 // Service provides order operations.
 type Service interface {
 	GetOrders(ctx context.Context, page, pageSize int, search string) ([]Order, int, error)
 	UpdateOrder(ctx context.Context, id string, data map[string]interface{}) (Order, error)
+	CreateOrder(ctx context.Context, req CreateOrderRequest) (Order, error)
 }

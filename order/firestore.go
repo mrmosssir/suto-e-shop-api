@@ -120,3 +120,28 @@ func (s *FirestoreService) UpdateOrder(ctx context.Context, id string, data map[
 	updatedDoc.DataTo(&updatedOrder)
 	return updatedOrder, nil
 }
+
+func (s *FirestoreService) CreateOrder(ctx context.Context, req CreateOrderRequest) (Order, error) {
+	ref := s.client.Collection(s.collection).NewDoc()
+
+	totalPrice := 0
+	for _, p := range req.Products {
+		totalPrice += p.Price * p.Count
+	}
+
+	order := Order{
+		ID:         ref.ID,
+		Name:       req.Name,
+		Mail:       req.Mail,
+		Products:   req.Products,
+		TotalPrice: totalPrice,
+		CreatedAt:  strconv.FormatInt(time.Now().Unix(), 10),
+	}
+
+	_, err := ref.Set(ctx, order)
+	if err != nil {
+		log.Printf("Failed to create order: %v", err)
+		return Order{}, err
+	}
+	return order, nil
+}

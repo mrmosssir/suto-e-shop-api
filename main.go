@@ -99,7 +99,8 @@ func main() {
 	// Order routes
 	orderService := order.NewFirestoreService(client)
 	orderHandler := order.NewHandler(orderService)
-	orderHandler.RegisterRoutes(adminRouter)
+	orderHandler.RegisterClientRoutes(r)
+	orderHandler.RegisterAdminRoutes(adminRouter)
 
 
 	port := os.Getenv("PORT")

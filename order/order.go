@@ -24,6 +24,7 @@ type Order struct {
 	PaidAt     string    `json:"paid_at" firestore:"paid_at"`
 	PickedAt   string    `json:"picked_at" firestore:"picked_at"`
 	CreatedAt  string    `json:"created_at" firestore:"created_at"`
+	DisabledAt string    `json:"disabled_at" firestore:"disabled_at"`
 }
 
 type CreateOrderRequest struct {

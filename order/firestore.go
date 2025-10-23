@@ -101,6 +101,13 @@ func (s *FirestoreService) UpdateOrder(ctx context.Context, id string, data map[
 				updates = append(updates, firestore.Update{Path: "picked_at", Value: strconv.FormatInt(time.Now().Unix(), 10)})
 			}
 		}
+
+		if (key == "is_enabled") {
+			isEnabled, ok := value.(bool)
+			if ok && !isEnabled {
+				updates = append(updates, firestore.Update{Path: "disabled_at", Value: strconv.FormatInt(time.Now().Unix(), 10)})
+			}
+		}
 	}
 
 	_, err = docRef.Update(ctx, updates)
@@ -135,6 +142,7 @@ func (s *FirestoreService) CreateOrder(ctx context.Context, req CreateOrderReque
 		Mail:       req.Mail,
 		Products:   req.Products,
 		TotalPrice: totalPrice,
+		IsEnabled:  true,
 		CreatedAt:  strconv.FormatInt(time.Now().Unix(), 10),
 	}
 

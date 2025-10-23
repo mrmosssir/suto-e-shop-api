@@ -40,6 +40,7 @@ type Service interface {
 	AdminUpdateProduct(ctx context.Context, id string, product Product) (Product, error)
 	AdminDeleteProduct(ctx context.Context, id string) error
 	GetProducts(ctx context.Context, page, pageSize int, search string) ([]ProductSimple, int, error)
+	GetProductsIds(ctx context.Context, ids []string) ([]Product, error)
 	GetProduct(ctx context.Context, id string) (Product, error)
 }
 
@@ -90,6 +91,19 @@ func (s *InMemoryService) GetProducts(ctx context.Context, page, pageSize int, s
 
 	return productList[start:end], totalCount, nil
 }
+
+func (s *InMemoryService) GetProductsIds(ctx context.Context, ids []string) ([]Product, error) {
+	var productList []Product
+	for _, id := range ids {
+		product, ok := s.products[id]
+		if !ok {
+			return nil, fmt.Errorf("product not found")
+		}
+		productList = append(productList, product)
+	}
+	return productList, nil
+}
+
 
 func (s *InMemoryService) GetProduct(ctx context.Context, id string) (Product, error) {
 	product, ok := s.products[id]

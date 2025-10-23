@@ -139,6 +139,19 @@ func (s *FirestoreService) GetProducts(ctx context.Context, page, pageSize int, 
 	return products[start:end], totalCount, nil
 }
 
+func (s *FirestoreService) GetProductsIds(ctx context.Context, ids []string) ([]Product, error) {
+	var products []Product
+	for _, id := range ids {
+		product, err := s.GetProduct(ctx, id)
+		if err != nil {
+			log.Printf("Failed to get product: %v", err)
+			continue
+		}
+		products = append(products, product)
+	}
+	return products, nil
+}
+
 func (s *FirestoreService) GetProduct(ctx context.Context, id string) (Product, error) {
 	doc, err := s.client.Collection(s.collection).Doc(id).Get(ctx)
 	if err != nil {

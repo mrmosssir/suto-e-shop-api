@@ -33,6 +33,7 @@ func (h *Handler) RegisterAdminRoutes(router *mux.Router) {
 // RegisterClientRoutes registers the product routes to the router.
 func (h *Handler) RegisterClientRoutes(router *mux.Router) {
 	router.HandleFunc("/products", h.GetProducts).Methods("GET")
+	router.HandleFunc("/products/ids", h.GetProductsIds).Methods("POST")
 	router.HandleFunc("/product/{id}", h.GetProduct).Methods("GET")
 }
 
@@ -134,6 +135,24 @@ func (h *Handler) GetProducts(w http.ResponseWriter, r *http.Request) {
 		Message:    "success",
 		Code:       0,
 	})
+}
+
+func (h *Handler) GetProductsIds(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		IDs []string `json:"ids"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	products, err := h.service.GetProductsIds(r.Context(), req.IDs)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, Response{Data: products, Message: "success", Code: 0})
 }
 
 func (h *Handler) GetProduct(w http.ResponseWriter, r *http.Request) {

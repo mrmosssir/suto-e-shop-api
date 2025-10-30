@@ -36,6 +36,7 @@ type CreateOrderRequest struct {
 // Service provides order operations.
 type Service interface {
 	GetOrders(ctx context.Context, page, pageSize int, search string) ([]Order, int, error)
+	SearchOrders(ctx context.Context, search string) ([]Order, error)
 	UpdateOrder(ctx context.Context, id string, data map[string]interface{}) (Order, error)
 	CreateOrder(ctx context.Context, req CreateOrderRequest) (Order, error)
 }

@@ -69,6 +69,37 @@ func (s *FirestoreService) GetOrders(ctx context.Context, page, pageSize int, se
 	return orders[start:end], totalCount, nil
 }
 
+func (s *FirestoreService) SearchOrders(ctx context.Context, search string) ([]Order, error) {
+	var orders []Order
+
+	query := s.client.Collection(s.collection).Query
+
+	iter := query.Documents(ctx)
+	defer iter.Stop()
+
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			log.Printf("Failed to search orders: %v", err)
+			return nil, err
+		}
+		var order Order
+		doc.DataTo(&order)
+
+		if search != "" {
+			// Search by name, mail, or id
+			if strings.Contains(order.Name, search) || strings.Contains(order.Mail, search) || strings.Contains(order.ID, search) {
+				orders = append(orders, order)
+			}
+		}
+	}
+
+	return orders, nil
+}
+
 func (s *FirestoreService) UpdateOrder(ctx context.Context, id string, data map[string]interface{}) (Order, error) {
 	docRef := s.client.Collection(s.collection).Doc(id)
 

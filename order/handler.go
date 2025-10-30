@@ -28,6 +28,7 @@ func (h *Handler) RegisterAdminRoutes(router *mux.Router) {
 
 // RegisterClientRoutes registers the client order routes to the router.
 func (h *Handler) RegisterClientRoutes(router *mux.Router) {
+	router.HandleFunc("/order", h.SearchOrders).Methods("GET")
 	router.HandleFunc("/order", h.CreateOrder).Methods("POST")
 }
 
@@ -102,6 +103,27 @@ func (h *Handler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	RespondWithJSON(w, http.StatusCreated, Response{Data: order, Message: "success", Code: 0})
+}
+
+func (h *Handler) SearchOrders(w http.ResponseWriter, r *http.Request) {
+	search := r.URL.Query().Get("search")
+
+	if search == "" {
+		RespondWithError(w, http.StatusBadRequest, "search parameter is required")
+		return
+	}
+
+	orders, err := h.service.SearchOrders(r.Context(), search)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, Response{
+		Data:    orders,
+		Message: "success",
+		Code:    0,
+	})
 }
 
 func validateCreateOrderRequest(req CreateOrderRequest) error {

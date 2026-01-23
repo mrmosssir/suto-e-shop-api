@@ -10,6 +10,7 @@ import (
 	firebase "firebase.google.com/go/v4"
 	"github.com/gorilla/mux"
 	"suto-e-shop-api/auth"
+	"suto-e-shop-api/category"
 	"suto-e-shop-api/coupon"
 	"suto-e-shop-api/order"
 	"suto-e-shop-api/product"
@@ -101,6 +102,12 @@ func main() {
 	orderHandler := order.NewHandler(orderService)
 	orderHandler.RegisterClientRoutes(r)
 	orderHandler.RegisterAdminRoutes(adminRouter)
+
+	// Category routes
+	categoryService := category.NewFirestoreService(client)
+	categoryHandler := category.NewHandler(categoryService)
+	categoryHandler.RegisterClientRoutes(r)
+	categoryHandler.RegisterAdminRoutes(adminRouter)
 
 
 	port := os.Getenv("PORT")

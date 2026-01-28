@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"cloud.google.com/go/firestore"
+	"cloud.google.com/go/storage"
 	firebase "firebase.google.com/go/v4"
 	"github.com/gorilla/mux"
 	"suto-e-shop-api/auth"
@@ -14,6 +15,7 @@ import (
 	"suto-e-shop-api/coupon"
 	"suto-e-shop-api/order"
 	"suto-e-shop-api/product"
+	"suto-e-shop-api/upload"
 )
 
 // CORSMiddleware sets up the CORS headers for every request.
@@ -70,6 +72,19 @@ func main() {
 		log.Fatalf("Failed to create Firebase app: %v", err)
 	}
 
+	// Initialize Cloud Storage Client
+	storageClient, err := storage.NewClient(ctx)
+	if err != nil {
+		log.Fatalf("Failed to create Storage client: %v", err)
+	}
+	defer storageClient.Close()
+
+	// Get Storage bucket name from environment variable or use default
+	storageBucket := os.Getenv("STORAGE_BUCKET")
+	if storageBucket == "" {
+		storageBucket = projectID + ".appspot.com"
+	}
+
 	r := mux.NewRouter()
 	r.StrictSlash(true)
 
@@ -108,6 +123,11 @@ func main() {
 	categoryHandler := category.NewHandler(categoryService)
 	categoryHandler.RegisterClientRoutes(r)
 	categoryHandler.RegisterAdminRoutes(adminRouter)
+
+	// Upload routes
+	uploadService := upload.NewStorageService(storageClient, storageBucket)
+	uploadHandler := upload.NewHandler(uploadService)
+	uploadHandler.RegisterAdminRoutes(adminRouter)
 
 
 	port := os.Getenv("PORT")

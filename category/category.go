@@ -6,6 +6,7 @@ import "context"
 type Category struct {
 	ID        string `json:"id" firestore:"id"`
 	Name      string `json:"name" firestore:"name"`
+	Image	    string `json:"image" firestore:"image"`
 	IsEnabled bool   `json:"is_enabled" firestore:"is_enabled"`
 }
 

@@ -35,25 +35,42 @@ func (s *FirestoreService) AdminCreateCategory(ctx context.Context, category Cat
 	return category, nil
 }
 
-func (s *FirestoreService) AdminGetCategories(ctx context.Context) ([]Category, error) {
+func (s *FirestoreService) AdminGetCategories(ctx context.Context, page, pageSize int, search string) ([]Category, int, error) {
 	var categories []Category
-	iter := s.client.Collection(s.collection).Documents(ctx)
+	// For more advanced search capabilities, consider using a dedicated search service like Algolia or Elasticsearch.
+	query := s.client.Collection(s.collection).Query
+	if search != "" {
+		query = query.Where("name", ">=", search).Where("name", "<=", search+"\uf8ff")
+	}
+
+	iter := query.Documents(ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
 			break
 		}
 		if err != nil {
-			return nil, err
+			log.Printf("Failed to get categories: %v", err)
+			return nil, 0, err
 		}
-
 		var category Category
-		if err := doc.DataTo(&category); err != nil {
-			return nil, err
-		}
+		doc.DataTo(&category)
 		categories = append(categories, category)
 	}
-	return categories, nil
+
+	totalCount := len(categories)
+	start := (page - 1) * pageSize
+	end := start + pageSize
+
+	if start > totalCount {
+		return []Category{}, totalCount, nil
+	}
+
+	if end > totalCount {
+		end = totalCount
+	}
+
+	return categories[start:end], totalCount, nil
 }
 
 func (s *FirestoreService) AdminGetCategory(ctx context.Context, id string) (Category, error) {

@@ -13,7 +13,7 @@ type Category struct {
 type Service interface {
 	// Admin operations
 	AdminCreateCategory(ctx context.Context, category Category) (Category, error)
-	AdminGetCategories(ctx context.Context) ([]Category, error)
+	AdminGetCategories(ctx context.Context, page, pageSize int, search string) ([]Category, int, error)
 	AdminGetCategory(ctx context.Context, id string) (Category, error)
 	AdminUpdateCategory(ctx context.Context, id string, category Category) (Category, error)
 	AdminDeleteCategory(ctx context.Context, id string) error

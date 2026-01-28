@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"suto-e-shop-api/pkg/pagination"
 )
 
 // Handler holds the category service.
@@ -50,13 +51,23 @@ func (h *Handler) AdminCreateCategory(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) AdminGetCategories(w http.ResponseWriter, r *http.Request) {
-	categories, err := h.service.AdminGetCategories(r.Context())
+	page, pageSize := pagination.GetPaginationParams(r)
+	search := r.URL.Query().Get("search")
+
+	categories, totalCount, err := h.service.AdminGetCategories(r.Context(), page, pageSize, search)
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	RespondWithJSON(w, http.StatusOK, Response{Data: categories, Message: "success", Code: 0})
+	paginator := pagination.New(page, pageSize, totalCount)
+
+	RespondWithJSON(w, http.StatusOK, PaginatedResponse{
+		Data:       categories,
+		Pagination: paginator,
+		Message:    "success",
+		Code:       0,
+	})
 }
 
 func (h *Handler) AdminGetCategory(w http.ResponseWriter, r *http.Request) {

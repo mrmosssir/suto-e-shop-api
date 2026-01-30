@@ -10,6 +10,12 @@ type Category struct {
 	IsEnabled bool   `json:"is_enabled" firestore:"is_enabled"`
 }
 
+type ClientCategory struct {
+	ID     string `json:"id" firestore:"id"`
+	Name   string `json:"name" firestore:"name"`
+	Image  string `json:"image" firestore:"image"`
+}
+
 // Service provides category operations.
 type Service interface {
 	// Admin operations
@@ -20,5 +26,5 @@ type Service interface {
 	AdminDeleteCategory(ctx context.Context, id string) error
 
 	// Client operations
-	GetCategories(ctx context.Context) ([]Category, error)
+	GetCategories(ctx context.Context) ([]ClientCategory, error)
 }

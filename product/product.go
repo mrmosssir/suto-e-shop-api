@@ -18,7 +18,9 @@ type Product struct {
 	Content     string  `json:"content" firestore:"content"`
 	IsEnabled   bool    `json:"is_enabled" firestore:"is_enabled"`
 	ImageURL    string  `json:"image_url" firestore:"image_url"`
-	Rating			float32 `json:"rating" firestore:"rating"`
+	Rating      float32 `json:"rating" firestore:"rating"`
+	IsNew       bool    `json:"is_new" firestore:"is_new"`
+	IsHot       bool    `json:"is_hot" firestore:"is_hot"`
 }
 
 // 給前台列表顯示用
@@ -42,6 +44,10 @@ type Service interface {
 	GetProducts(ctx context.Context, page, pageSize int, search string) ([]ProductSimple, int, error)
 	GetProductsIds(ctx context.Context, ids []string) ([]Product, error)
 	GetProduct(ctx context.Context, id string) (Product, error)
+	GetNewProducts(ctx context.Context) ([]ProductSimple, error)
+	GetHotProducts(ctx context.Context) ([]ProductSimple, error)
+	CountNewProducts(ctx context.Context) (int, error)
+	CountHotProducts(ctx context.Context) (int, error)
 }
 
 // InMemoryService is an in-memory implementation of the product service.
@@ -170,4 +176,60 @@ func (s *InMemoryService) AdminDeleteProduct(ctx context.Context, id string) err
 	}
 	delete(s.products, id)
 	return nil
+}
+
+func (s *InMemoryService) GetNewProducts(ctx context.Context) ([]ProductSimple, error) {
+	var products []ProductSimple
+	for _, p := range s.products {
+		if p.IsNew && p.IsEnabled {
+			products = append(products, ProductSimple{
+				ID:          p.ID,
+				Category:    p.Category,
+				Name:        p.Name,
+				Price:       p.Price,
+				OriginPrice: p.OriginPrice,
+				ImageURL:    p.ImageURL,
+				Rating:      p.Rating,
+			})
+		}
+	}
+	return products, nil
+}
+
+func (s *InMemoryService) GetHotProducts(ctx context.Context) ([]ProductSimple, error) {
+	var products []ProductSimple
+	for _, p := range s.products {
+		if p.IsHot && p.IsEnabled {
+			products = append(products, ProductSimple{
+				ID:          p.ID,
+				Category:    p.Category,
+				Name:        p.Name,
+				Price:       p.Price,
+				OriginPrice: p.OriginPrice,
+				ImageURL:    p.ImageURL,
+				Rating:      p.Rating,
+			})
+		}
+	}
+	return products, nil
+}
+
+func (s *InMemoryService) CountNewProducts(ctx context.Context) (int, error) {
+	count := 0
+	for _, p := range s.products {
+		if p.IsNew {
+			count++
+		}
+	}
+	return count, nil
+}
+
+func (s *InMemoryService) CountHotProducts(ctx context.Context) (int, error) {
+	count := 0
+	for _, p := range s.products {
+		if p.IsHot {
+			count++
+		}
+	}
+	return count, nil
 }

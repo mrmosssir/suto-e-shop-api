@@ -100,8 +100,8 @@ func (s *FirestoreService) AdminDeleteCategory(ctx context.Context, id string) e
 	return err
 }
 
-func (s *FirestoreService) GetCategories(ctx context.Context) ([]Category, error) {
-	var categories []Category
+func (s *FirestoreService) GetCategories(ctx context.Context) ([]ClientCategory, error) {
+	var categories []ClientCategory
 	iter := s.client.Collection(s.collection).Where("is_enabled", "==", true).Documents(ctx)
 	for {
 		doc, err := iter.Next()
@@ -112,7 +112,7 @@ func (s *FirestoreService) GetCategories(ctx context.Context) ([]Category, error
 			return nil, err
 		}
 
-		var category Category
+		var category ClientCategory
 		if err := doc.DataTo(&category); err != nil {
 			return nil, err
 		}

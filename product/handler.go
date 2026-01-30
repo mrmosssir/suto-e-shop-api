@@ -34,6 +34,8 @@ func (h *Handler) RegisterAdminRoutes(router *mux.Router) {
 func (h *Handler) RegisterClientRoutes(router *mux.Router) {
 	router.HandleFunc("/products", h.GetProducts).Methods("GET")
 	router.HandleFunc("/products/ids", h.GetProductsIds).Methods("POST")
+	router.HandleFunc("/products/new", h.GetNewProducts).Methods("GET")
+	router.HandleFunc("/products/hot", h.GetHotProducts).Methods("GET")
 	router.HandleFunc("/product/{id}", h.GetProduct).Methods("GET")
 }
 
@@ -42,6 +44,32 @@ func (h *Handler) AdminCreateProduct(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
 		RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
+	}
+
+	// Check isNew limit
+	if product.IsNew {
+		newCount, err := h.service.CountNewProducts(r.Context())
+		if err != nil {
+			RespondWithError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		if newCount >= 20 {
+			RespondWithError(w, http.StatusBadRequest, "新品數量已達上限 20 個，無法新增")
+			return
+		}
+	}
+
+	// Check isHot limit
+	if product.IsHot {
+		hotCount, err := h.service.CountHotProducts(r.Context())
+		if err != nil {
+			RespondWithError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		if hotCount >= 20 {
+			RespondWithError(w, http.StatusBadRequest, "熱門商品數量已達上限 20 個，無法新增")
+			return
+		}
 	}
 
 	createdProduct, err := h.service.AdminCreateProduct(r.Context(), product)
@@ -94,6 +122,39 @@ func (h *Handler) AdminUpdateProduct(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
 		RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
+	}
+
+	// Get existing product to check if isNew/isHot changed
+	existingProduct, err := h.service.AdminGetProduct(r.Context(), id)
+	if err != nil {
+		RespondWithError(w, http.StatusNotFound, "Product not found")
+		return
+	}
+
+	// Check isNew limit (only if changing from false to true)
+	if product.IsNew && !existingProduct.IsNew {
+		newCount, err := h.service.CountNewProducts(r.Context())
+		if err != nil {
+			RespondWithError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		if newCount >= 20 {
+			RespondWithError(w, http.StatusBadRequest, "新品數量已達上限 20 個，無法設定為新品")
+			return
+		}
+	}
+
+	// Check isHot limit (only if changing from false to true)
+	if product.IsHot && !existingProduct.IsHot {
+		hotCount, err := h.service.CountHotProducts(r.Context())
+		if err != nil {
+			RespondWithError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		if hotCount >= 20 {
+			RespondWithError(w, http.StatusBadRequest, "熱門商品數量已達上限 20 個，無法設定為熱門商品")
+			return
+		}
 	}
 
 	updatedProduct, err := h.service.AdminUpdateProduct(r.Context(), id, product)
@@ -166,4 +227,24 @@ func (h *Handler) GetProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	RespondWithJSON(w, http.StatusOK, Response{Data: product, Message: "success", Code: 0})
+}
+
+func (h *Handler) GetNewProducts(w http.ResponseWriter, r *http.Request) {
+	products, err := h.service.GetNewProducts(r.Context())
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, Response{Data: products, Message: "success", Code: 0})
+}
+
+func (h *Handler) GetHotProducts(w http.ResponseWriter, r *http.Request) {
+	products, err := h.service.GetHotProducts(r.Context())
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, Response{Data: products, Message: "success", Code: 0})
 }

@@ -162,3 +162,79 @@ func (s *FirestoreService) GetProduct(ctx context.Context, id string) (Product, 
 	doc.DataTo(&product)
 	return product, nil
 }
+
+func (s *FirestoreService) GetNewProducts(ctx context.Context) ([]ProductSimple, error) {
+	var products []ProductSimple
+	query := s.client.Collection(s.collection).Where("is_new", "==", true).Where("is_enabled", "==", true)
+	iter := query.Documents(ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			log.Printf("Failed to get new products: %v", err)
+			return nil, err
+		}
+		var product ProductSimple
+		doc.DataTo(&product)
+		products = append(products, product)
+	}
+	return products, nil
+}
+
+func (s *FirestoreService) GetHotProducts(ctx context.Context) ([]ProductSimple, error) {
+	var products []ProductSimple
+	query := s.client.Collection(s.collection).Where("is_hot", "==", true).Where("is_enabled", "==", true)
+	iter := query.Documents(ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			log.Printf("Failed to get hot products: %v", err)
+			return nil, err
+		}
+		var product ProductSimple
+		doc.DataTo(&product)
+		products = append(products, product)
+	}
+	return products, nil
+}
+
+func (s *FirestoreService) CountNewProducts(ctx context.Context) (int, error) {
+	query := s.client.Collection(s.collection).Where("is_new", "==", true)
+	iter := query.Documents(ctx)
+	count := 0
+	for {
+		_, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			log.Printf("Failed to count new products: %v", err)
+			return 0, err
+		}
+		count++
+	}
+	return count, nil
+}
+
+func (s *FirestoreService) CountHotProducts(ctx context.Context) (int, error) {
+	query := s.client.Collection(s.collection).Where("is_hot", "==", true)
+	iter := query.Documents(ctx)
+	count := 0
+	for {
+		_, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			log.Printf("Failed to count hot products: %v", err)
+			return 0, err
+		}
+		count++
+	}
+	return count, nil
+}

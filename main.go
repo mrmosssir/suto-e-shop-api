@@ -11,6 +11,7 @@ import (
 	firebase "firebase.google.com/go/v4"
 	"github.com/gorilla/mux"
 	"suto-e-shop-api/auth"
+	"suto-e-shop-api/banner"
 	"suto-e-shop-api/category"
 	"suto-e-shop-api/coupon"
 	"suto-e-shop-api/order"
@@ -89,7 +90,7 @@ func main() {
 	r.StrictSlash(true)
 
 	// Setup CORS
-	allowedOrigins := []string{"http://localhost:5173"}
+	allowedOrigins := []string{"http://localhost:5173", "https://suto-e-shop.netlify.app"}
 	r.Use(CORSMiddleware(allowedOrigins))
 
 	// Add a handler for OPTIONS requests to handle preflight CORS requests.
@@ -128,6 +129,12 @@ func main() {
 	uploadService := upload.NewStorageService(storageClient, storageBucket)
 	uploadHandler := upload.NewHandler(uploadService)
 	uploadHandler.RegisterAdminRoutes(adminRouter)
+
+	// Banner routes
+	bannerService := banner.NewFirestoreService(client)
+	bannerHandler := banner.NewHandler(bannerService)
+	bannerHandler.RegisterClientRoutes(r)
+	bannerHandler.RegisterAdminRoutes(adminRouter)
 
 
 	port := os.Getenv("PORT")

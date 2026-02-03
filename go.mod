@@ -8,6 +8,7 @@ require (
 	firebase.google.com/go/v4 v4.18.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
+	golang.org/x/image v0.35.0
 	google.golang.org/api v0.231.0
 )
 
@@ -52,9 +53,9 @@ require (
 	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
-	golang.org/x/sync v0.16.0 // indirect
+	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
-	golang.org/x/text v0.27.0 // indirect
+	golang.org/x/text v0.33.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
 	google.golang.org/appengine/v2 v2.0.6 // indirect
 	google.golang.org/genproto v0.0.0-20250505200425-f936aa4a68b2 // indirect

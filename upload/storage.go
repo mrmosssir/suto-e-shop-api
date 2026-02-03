@@ -62,9 +62,8 @@ func (s *StorageService) UploadImage(ctx context.Context, fileData []byte, conte
 		return UploadResult{}, fmt.Errorf("failed to set ACL: %w", err)
 	}
 
-	// Generate the public URL with resized image suffix (Firebase Resize Image Extension)
-	resizedObjectPath := fmt.Sprintf("%s/%s_200x200%s", uploadType, id, ext)
-	url := fmt.Sprintf("https://storage.googleapis.com/%s/%s", s.bucketName, resizedObjectPath)
+	// Generate the public URL: /type/filename.ext
+	url := fmt.Sprintf("/%s", objectPath)
 
 	return UploadResult{
 		ID:   id,

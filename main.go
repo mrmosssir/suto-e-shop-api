@@ -10,8 +10,8 @@ import (
 	"cloud.google.com/go/storage"
 	firebase "firebase.google.com/go/v4"
 	"github.com/gorilla/mux"
+	"suto-e-shop-api/advertise"
 	"suto-e-shop-api/auth"
-	"suto-e-shop-api/banner"
 	"suto-e-shop-api/category"
 	"suto-e-shop-api/coupon"
 	"suto-e-shop-api/order"
@@ -130,11 +130,11 @@ func main() {
 	uploadHandler := upload.NewHandler(uploadService)
 	uploadHandler.RegisterAdminRoutes(adminRouter)
 
-	// Banner routes
-	bannerService := banner.NewFirestoreService(client)
-	bannerHandler := banner.NewHandler(bannerService)
-	bannerHandler.RegisterClientRoutes(r)
-	bannerHandler.RegisterAdminRoutes(adminRouter)
+	// Advertise routes
+	advertiseService := advertise.NewFirestoreService(client)
+	advertiseHandler := advertise.NewHandler(advertiseService)
+	advertiseHandler.RegisterClientRoutes(r)
+	advertiseHandler.RegisterAdminRoutes(adminRouter)
 
 
 	port := os.Getenv("PORT")

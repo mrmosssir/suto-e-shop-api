@@ -1,6 +1,6 @@
 module suto-e-shop-api
 
-go 1.25.1
+go 1.24.0
 
 require (
 	cloud.google.com/go/firestore v1.18.0
@@ -8,7 +8,6 @@ require (
 	firebase.google.com/go/v4 v4.18.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
-	golang.org/x/image v0.35.0
 	google.golang.org/api v0.231.0
 )
 

@@ -1,4 +1,4 @@
-package banner
+package advertise
 
 import (
 	"encoding/json"

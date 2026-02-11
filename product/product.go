@@ -11,6 +11,7 @@ type Product struct {
 	ID          string  `json:"id" firestore:"id"`
 	Name        string  `json:"name" firestore:"name"`
 	Category    string  `json:"category" firestore:"category"`
+	CategoryID  string  `json:"category_id" firestore:"category_id"`
 	Price       int32   `json:"price" firestore:"price"`
 	OriginPrice int32   `json:"origin_price" firestore:"origin_price"`
 	Unit        string  `json:"unit" firestore:"unit"`
@@ -21,6 +22,7 @@ type Product struct {
 	Rating      float32 `json:"rating" firestore:"rating"`
 	IsNew       bool    `json:"is_new" firestore:"is_new"`
 	IsHot       bool    `json:"is_hot" firestore:"is_hot"`
+	Stock       int32   `json:"stock" firestore:"stock"`
 }
 
 // 給前台列表顯示用

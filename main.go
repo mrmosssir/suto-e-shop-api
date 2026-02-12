@@ -90,7 +90,7 @@ func main() {
 	r.StrictSlash(true)
 
 	// Setup CORS
-	allowedOrigins := []string{"http://localhost:5173", "https://suto-e-shop.netlify.app"}
+	allowedOrigins := []string{"http://localhost:5173", "http://localhost:3000", "https://suto-e-shop.netlify.app"}
 	r.Use(CORSMiddleware(allowedOrigins))
 
 	// Add a handler for OPTIONS requests to handle preflight CORS requests.
